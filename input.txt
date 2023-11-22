@@ -107,3 +107,50 @@ def profile():
 
     return render_template('auth/profile.html', user=user)
 
+///11/23
+
+//.html
+<form method="post">
+  <div class="col-12 d-flex justify-content-between mb-3 col-sm-3">
+    <div class="col-8">
+      {{ render_field(form.group_name, class="form-control my-custom-input fst-italic font-monospace shadow p-3 bg-body-tertiary rounded", id="additionalInput", placeholder="Group") }}
+    </div>
+
+    <div class="col-1">
+      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addModal">
+        新增
+      </button>
+    </div>
+
+    <div class="col-1">
+      <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+        刪除
+      </button>
+    </div>
+  </div>
+  <input type="submit" value="Save">
+</form>
+
+//from
+class GroupForm(FlaskForm):
+    group_name = StringField('Group Name', validators=[DataRequired()])
+    submit = SubmitField('Create Group')
+
+
+
+///view
+@group_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = GroupForm()
+
+    if form.validate_on_submit():
+        group_name = form.group_name.data
+
+        try:
+            new_group = Groups.create(group_name=group_name)
+            flash(f"Group '{group_name}' created successfully!", 'success')
+        except Exception as e:
+            flash(f"Error creating group: {str(e)}", 'error')
+
+    return render_template('auth/profile.html', form=form)
